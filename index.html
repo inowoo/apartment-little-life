@@ -10,6 +10,16 @@
   <div id="app">
     <canvas id="game-canvas" aria-label="Apartment Little Life game view"></canvas>
 
+    <div id="title-screen" class="title-screen">
+      <div class="title-card">
+        <div class="title-eyebrow">小さなマンションの生活観察ゲーム</div>
+        <h1>APARTMENT<br />LITTLE LIFE</h1>
+        <p class="title-copy">住人たちは、見ていない間もそれぞれの生活を続けています。</p>
+        <button id="start-button" class="start-button" type="button">生活をのぞく</button>
+        <div id="title-version" class="title-version">v0.2.0</div>
+      </div>
+    </div>
+
     <header class="hud hud-top">
       <div class="hud-group time-block">
         <strong id="day-label">1日目</strong>
@@ -42,14 +52,19 @@
         <p id="resident-profile">まだ誰も選択されていません。</p>
       </div>
       <div class="log-section">
-        <h2>観察履歴</h2>
-        <ul id="resident-log" class="resident-log">
-          <li>住人を観察すると、ここに簡易ログが残ります。</li>
-        </ul>
+        <div class="section-heading-row">
+          <h2>生活ログ</h2>
+          <span id="resident-log-count" class="log-count"></span>
+        </div>
+        <p class="log-help">選択していない間の行動も自動で記録されます。</p>
+        <ol id="resident-log" class="resident-log">
+          <li>住人の行動が変わると、ここに記録されます。</li>
+        </ol>
       </div>
     </aside>
 
     <div class="hint">クリック / タップ: 選択　ドラッグ / スワイプ: 移動　ホイール / ピンチ: 拡大縮小</div>
+    <div id="game-version" class="game-version">v0.2.0</div>
   </div>
 
   <script type="module" src="./src/main.js"></script>
