@@ -1,7 +1,14 @@
+const APP_VERSION = 'v0.2.0';
+
 const canvas = document.querySelector('#game-canvas');
 const ctx = canvas.getContext('2d');
+ctx.imageSmoothingEnabled = false;
 
 const ui = {
+  titleScreen: document.querySelector('#title-screen'),
+  start: document.querySelector('#start-button'),
+  titleVersion: document.querySelector('#title-version'),
+  gameVersion: document.querySelector('#game-version'),
   day: document.querySelector('#day-label'),
   time: document.querySelector('#time-label'),
   period: document.querySelector('#period-label'),
@@ -18,7 +25,11 @@ const ui = {
   thought: document.querySelector('#resident-thought'),
   profile: document.querySelector('#resident-profile'),
   log: document.querySelector('#resident-log'),
+  logCount: document.querySelector('#resident-log-count'),
 };
+
+ui.titleVersion.textContent = APP_VERSION;
+ui.gameVersion.textContent = APP_VERSION;
 
 const WORLD = {
   buildingX: 140,
@@ -34,94 +45,112 @@ WORLD.height = WORLD.roomHeight * WORLD.floors;
 const residents = [
   {
     id: 'misaki', name: '田中 美咲', initials: '美', room: 302, role: '出版社勤務', schedule: 'office',
-    symbol: '●', profile: '34歳。真面目で少し心配性。最近、仕事をこのまま続けるか迷っている。',
+    profile: '34歳。真面目で少し心配性。最近、仕事をこのまま続けるか迷っている。',
+    appearance: { skin: '#e7b98f', hair: '#332722', shirt: '#b54a5a', pants: '#39435b', accent: '#f0cf77', hairStyle: 1, build: 0 },
     thoughts: {
       morning: '今日もちゃんと間に合うかな。', day: '午後の打ち合わせ、早く終わらないかな。', evening: '帰ったら何もしたくない。', night: '転職サイトだけ、少し見てみようかな。', late: '明日のことは明日考えよう。'
     }
   },
   {
     id: 'sota', name: '佐藤 蒼太', initials: '蒼', room: 404, role: '大学生', schedule: 'university',
-    symbol: '▲', profile: '20歳。大学2年生。人当たりは良いが、予定はだいたい行き当たりばったり。',
+    profile: '20歳。大学2年生。人当たりは良いが、予定はだいたい行き当たりばったり。',
+    appearance: { skin: '#e8bd95', hair: '#1c2029', shirt: '#3979a8', pants: '#28333f', accent: '#d56b35', hairStyle: 2, build: 0 },
     thoughts: {
       morning: '一限、間に合うかな。', day: '帰りに本屋へ寄ろう。', evening: '晩飯どうしよう。', night: 'もうちょっとだけゲームしよう。', late: 'さすがに寝た方がいいな。'
     }
   },
   {
     id: 'haru', name: '山本 はる', initials: 'は', room: 203, role: '小学生', schedule: 'child',
-    symbol: '■', profile: '10歳。よく喋り、マンションの大人にもすぐ挨拶する。算数の宿題は少し苦手。',
+    profile: '10歳。よく喋り、マンションの大人にもすぐ挨拶する。算数の宿題は少し苦手。',
+    appearance: { skin: '#efc9a1', hair: '#3b2d25', shirt: '#e2b436', pants: '#446b7c', accent: '#dc564a', hairStyle: 3, build: -1 },
     thoughts: {
       morning: '今日の給食なんだっけ。', day: '早く帰って遊びたい。', evening: '宿題、あとでやればいいかな。', night: '明日の時間割、見たっけ？', late: 'もう眠い。'
     }
   },
   {
     id: 'naoko', name: '山本 直子', initials: '直', room: 203, role: '在宅勤務', schedule: 'remote',
-    symbol: '◆', profile: '41歳。はるの母。自宅でデザイン関係の仕事をしている。仕事中でも家のことが気になる。',
+    profile: '41歳。はるの母。自宅でデザイン関係の仕事をしている。仕事中でも家のことが気になる。',
+    appearance: { skin: '#e4b58d', hair: '#4a3024', shirt: '#6d8f68', pants: '#4b4b53', accent: '#d6c7a2', hairStyle: 4, build: 0 },
     thoughts: {
       morning: '洗濯を回してから仕事を始めよう。', day: '集中できるうちにここまで終わらせたい。', evening: '夕飯、簡単なものでいいかな。', night: '明日の分だけ片付けておこう。', late: '今日はもう終わり。'
     }
   },
   {
     id: 'genzo', name: '高橋 源三', initials: '源', room: 101, role: '退職後', schedule: 'retired',
-    symbol: '★', profile: '72歳。口数は少ないが、毎朝ベランダから空を見るのが習慣。',
+    profile: '72歳。口数は少ないが、毎朝ベランダから空を見るのが習慣。',
+    appearance: { skin: '#d9aa82', hair: '#b7b6ad', shirt: '#766d59', pants: '#3d4550', accent: '#9e8d67', hairStyle: 5, build: 1 },
     thoughts: {
       morning: '今日は少し暖かそうだ。', day: '買い物は昼前に済ませるか。', evening: 'ニュースでも見るかな。', night: '明日はどこまで歩こう。', late: '夜更かしはよくないな。'
     }
   },
   {
     id: 'fumi', name: '高橋 文江', initials: '文', room: 101, role: '退職後', schedule: 'retired',
-    symbol: '✿', profile: '69歳。源三の妻。近所の店の特売日をよく覚えている。',
+    profile: '69歳。源三の妻。近所の店の特売日をよく覚えている。',
+    appearance: { skin: '#dfb18c', hair: '#a9a79e', shirt: '#a45e74', pants: '#59566a', accent: '#d9c36e', hairStyle: 6, build: 0 },
     thoughts: {
       morning: '今日はシーツも洗おう。', day: '卵を買い忘れないようにしないと。', evening: '明日の朝ごはん、何にしよう。', night: 'あの人、またテレビをつけたまま寝そう。', late: '戸締まりだけ確認しよう。'
     }
   },
   {
     id: 'ren', name: '木村 蓮', initials: '蓮', room: 201, role: '無職', schedule: 'hikikomori',
-    symbol: '◇', profile: '27歳。ほとんど外へ出ない。夜になると活動的になり、オンライン上ではよく喋る。',
+    profile: '27歳。ほとんど外へ出ない。夜になると活動的になり、オンライン上ではよく喋る。',
+    appearance: { skin: '#d6a982', hair: '#202126', shirt: '#46414e', pants: '#252a31', accent: '#7d79a9', hairStyle: 7, build: 0 },
     thoughts: {
       morning: '外が明るい。そろそろ寝ようかな。', day: '宅配、置き配にしておけばよかった。', evening: 'やっと静かになってきた。', night: '今日は調子がいい。', late: 'この時間が一番落ち着く。'
     }
   },
   {
     id: 'riko', name: '森田 莉子', initials: '莉', room: 204, role: '看護師（夜勤あり）', schedule: 'night',
-    symbol: '✚', profile: '29歳。夜勤が多く、他の住人と生活時間がずれている。帰宅後に甘い物を食べるのが小さな楽しみ。',
+    profile: '29歳。夜勤が多く、他の住人と生活時間がずれている。帰宅後に甘い物を食べるのが小さな楽しみ。',
+    appearance: { skin: '#e8bd95', hair: '#30272b', shirt: '#d8e4e6', pants: '#5d7890', accent: '#75a6a8', hairStyle: 8, build: 0 },
     thoughts: {
       morning: '帰ったらシャワーだけ浴びて寝よう。', day: 'もう少し寝ていたい。', evening: 'そろそろ支度しないと。', night: '今夜は落ち着いてるといいな。', late: 'あと何時間だろう。'
     }
   },
   {
     id: 'akira', name: '小林 晶', initials: '晶', room: 305, role: '漫画家', schedule: 'manga',
-    symbol: '⬟', profile: '38歳。締切前になると昼夜が逆転する漫画家。独り言が多い。',
+    profile: '38歳。締切前になると昼夜が逆転する漫画家。独り言が多い。',
+    appearance: { skin: '#ddb18d', hair: '#242126', shirt: '#8d5f44', pants: '#4a423f', accent: '#d8d3c7', hairStyle: 9, build: 0 },
     thoughts: {
       morning: '寝る前にあと一コマだけ。', day: '起きた。たぶん朝じゃない。', evening: 'ここからが本番。', night: '線が決まらない……。', late: '今なら描ける気がする。'
     }
   },
   {
     id: 'kenji', name: '伊藤 健司', initials: '健', room: 501, role: '会社員', schedule: 'officeLate',
-    symbol: '⬢', profile: '46歳。帰宅が遅い会社員。家では静かに過ごすが、最近よくため息をつく。',
+    profile: '46歳。帰宅が遅い会社員。家では静かに過ごすが、最近よくため息をつく。',
+    appearance: { skin: '#d8a57d', hair: '#2a2825', shirt: '#5f6a78', pants: '#30343a', accent: '#9f4a45', hairStyle: 10, build: 1 },
     thoughts: {
       morning: '今日こそ早く帰りたい。', day: 'メールがまた増えてる。', evening: 'まだ終わらないか。', night: 'コンビニで何か買って帰ろう。', late: 'もう寝るだけだな。'
     }
   },
   {
     id: 'mei', name: 'リン・メイ', initials: 'M', room: 502, role: '留学生', schedule: 'university',
-    symbol: '⬣', profile: '22歳。日本語を勉強中の留学生。料理が好きで、週末はよく友人を呼ぶ。',
+    profile: '22歳。日本語を勉強中の留学生。料理が好きで、週末はよく友人を呼ぶ。',
+    appearance: { skin: '#e9bb91', hair: '#242027', shirt: '#a54c48', pants: '#31465a', accent: '#e4b458', hairStyle: 11, build: 0 },
     thoughts: {
       morning: '今日は日本語で質問してみよう。', day: '帰りにスーパーへ行こう。', evening: '新しいレシピを試したい。', night: '今日の言い方、自然だったかな。', late: '家族にメッセージして寝よう。'
     }
   },
   {
     id: 'yui', name: '松本 結衣', initials: '結', room: 402, role: 'フリーランス', schedule: 'remote',
-    symbol: '⬤', profile: '31歳。自宅で映像編集をしている。締切が近いと部屋からほとんど出ない。',
+    profile: '31歳。自宅で映像編集をしている。締切が近いと部屋からほとんど出ない。',
+    appearance: { skin: '#e2b48b', hair: '#392a31', shirt: '#76528e', pants: '#3b4154', accent: '#6ea7a5', hairStyle: 12, build: 0 },
     thoughts: {
       morning: '先にコーヒーを淹れよう。', day: 'レンダー待ちの間に洗濯しよう。', evening: '今日はここで区切りたい。', night: 'もう一回だけ確認しよう。', late: '書き出しが終わるまで寝られない。'
     }
   }
 ];
 
+for (const resident of residents) {
+  resident.logs = [];
+  resident.lastStateKey = null;
+}
+
 const state = {
   gameMinutes: 6 * 60 + 30,
   day: 1,
-  paused: false,
+  started: false,
+  paused: true,
   speedIndex: 1,
   speeds: [0.5, 1, 4, 12],
   selectedResidentId: null,
@@ -150,7 +179,7 @@ function resizeCanvas() {
   canvas.width = Math.max(1, Math.floor(rect.width * dpr));
   canvas.height = Math.max(1, Math.floor(rect.height * dpr));
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  canvas.dataset.dpr = String(dpr);
+  ctx.imageSmoothingEnabled = false;
 }
 
 function resetCamera() {
@@ -294,8 +323,27 @@ function getResidentsInRoom(room) {
   return residents.filter((resident) => resident.room === room);
 }
 
+function recordResidentActivity(force = false) {
+  const hour = getHour();
+  for (const resident of residents) {
+    const status = getResidentState(resident, hour);
+    const stateKey = `${status.location}|${status.action}`;
+    if (!force && resident.lastStateKey === stateKey) continue;
+
+    resident.lastStateKey = stateKey;
+    resident.logs.unshift({
+      day: state.day,
+      time: formatTime(),
+      location: status.location,
+      action: status.action,
+      thought: status.thought,
+    });
+    resident.logs = resident.logs.slice(0, 80);
+  }
+}
+
 function updateGame(deltaSeconds) {
-  if (state.paused) return;
+  if (!state.started || state.paused) return;
   const speed = state.speeds[state.speedIndex];
   state.gameMinutes += deltaSeconds * 5 * speed;
 
@@ -303,6 +351,8 @@ function updateGame(deltaSeconds) {
     state.gameMinutes -= 24 * 60;
     state.day += 1;
   }
+
+  recordResidentActivity(false);
 }
 
 function updateHud() {
@@ -319,11 +369,11 @@ function updateHud() {
 }
 
 function getSkyColors(hour) {
-  if (hour >= 5 && hour < 8) return ['#7f98b2', '#d6b89e'];
-  if (hour >= 8 && hour < 16) return ['#8fb6d9', '#d8e7ef'];
-  if (hour >= 16 && hour < 19) return ['#9c7483', '#e2a36f'];
-  if (hour >= 19 && hour < 22) return ['#35405f', '#1f263b'];
-  return ['#151b2e', '#0c1020'];
+  if (hour >= 5 && hour < 8) return ['#6f819b', '#c49579'];
+  if (hour >= 8 && hour < 16) return ['#6c9dc2', '#c5d5d8'];
+  if (hour >= 16 && hour < 19) return ['#875f73', '#cf8457'];
+  if (hour >= 19 && hour < 22) return ['#2b3452', '#171c2d'];
+  return ['#12182a', '#090d18'];
 }
 
 function draw() {
@@ -336,9 +386,12 @@ function draw() {
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, rect.width, rect.height);
 
+  drawPixelSky(rect, hour);
+
   ctx.save();
-  ctx.translate(camera.x, camera.y);
+  ctx.translate(Math.round(camera.x), Math.round(camera.y));
   ctx.scale(camera.scale, camera.scale);
+  ctx.imageSmoothingEnabled = false;
 
   drawGround();
   drawBuilding(hour);
@@ -346,16 +399,32 @@ function draw() {
   ctx.restore();
 }
 
+function drawPixelSky(rect, hour) {
+  ctx.save();
+  ctx.globalAlpha = hour >= 19 || hour < 5 ? 0.8 : 0.35;
+  ctx.fillStyle = '#f2e6be';
+  const count = hour >= 19 || hour < 5 ? 28 : 7;
+  for (let i = 0; i < count; i += 1) {
+    const x = (i * 137 + 53) % Math.max(1, rect.width);
+    const y = (i * 71 + 41) % Math.max(1, rect.height * 0.65);
+    const size = i % 3 === 0 ? 3 : 2;
+    ctx.fillRect(Math.round(x), Math.round(y), size, size);
+  }
+  ctx.restore();
+}
+
 function drawGround() {
   const y = WORLD.buildingY + WORLD.height;
-  ctx.fillStyle = '#39434a';
+  ctx.fillStyle = '#31383b';
   ctx.fillRect(-500, y, WORLD.width + 1200, 170);
-  ctx.fillStyle = '#626d70';
+  ctx.fillStyle = '#596166';
   ctx.fillRect(-500, y + 12, WORLD.width + 1200, 4);
+  ctx.fillStyle = '#242a2d';
+  for (let x = -500; x < WORLD.width + 700; x += 36) ctx.fillRect(x, y + 48, 22, 4);
 }
 
 function drawBuilding(hour) {
-  ctx.fillStyle = '#2b2d31';
+  ctx.fillStyle = '#24262a';
   ctx.fillRect(WORLD.buildingX - 18, WORLD.buildingY - 32, WORLD.width + 36, WORLD.height + 50);
 
   state.hitResidents = [];
@@ -367,10 +436,10 @@ function drawBuilding(hour) {
     }
   }
 
-  ctx.fillStyle = '#17191d';
+  ctx.fillStyle = '#15171a';
   ctx.fillRect(WORLD.buildingX - 35, WORLD.buildingY - 48, WORLD.width + 70, 20);
-  ctx.fillStyle = '#d4d0c6';
-  ctx.font = 'bold 26px system-ui, sans-serif';
+  ctx.fillStyle = '#d1cbbd';
+  ctx.font = 'bold 26px monospace';
   ctx.textAlign = 'left';
   ctx.fillText('APARTMENT LITTLE LIFE', WORLD.buildingX, WORLD.buildingY - 62);
 }
@@ -382,26 +451,25 @@ function drawRoom(room, hour) {
   const anyoneHome = states.some((item) => item.status.isHome);
   const night = hour < 6 || hour >= 19;
 
-  ctx.fillStyle = night && anyoneHome ? '#5d5542' : '#d5cec0';
+  ctx.fillStyle = night && anyoneHome ? '#5b5037' : '#cfc5b2';
   ctx.fillRect(r.x + 2, r.y + 2, r.width - 4, r.height - 4);
-
   drawFurniture(r, room);
 
-  ctx.strokeStyle = '#6e675d';
-  ctx.lineWidth = 3;
+  ctx.strokeStyle = '#615c55';
+  ctx.lineWidth = 4;
   ctx.strokeRect(r.x, r.y, r.width, r.height);
 
   ctx.fillStyle = '#25272a';
-  ctx.font = 'bold 16px system-ui, sans-serif';
+  ctx.font = 'bold 16px monospace';
   ctx.textAlign = 'left';
   ctx.fillText(String(room), r.x + 12, r.y + 24);
 
   const awayCount = states.filter((item) => !item.status.isHome).length;
   if (awayCount > 0) {
-    ctx.fillStyle = 'rgba(30, 32, 35, 0.72)';
+    ctx.fillStyle = '#323439';
     ctx.fillRect(r.x + r.width - 72, r.y + 9, 60, 23);
-    ctx.fillStyle = '#f0f0f0';
-    ctx.font = '12px system-ui, sans-serif';
+    ctx.fillStyle = '#ededed';
+    ctx.font = '12px monospace';
     ctx.textAlign = 'center';
     ctx.fillText(`外出 ${awayCount}`, r.x + r.width - 42, r.y + 25);
   }
@@ -412,87 +480,150 @@ function drawRoom(room, hour) {
 
 function drawFurniture(r, room) {
   const variant = room % 4;
-
-  ctx.fillStyle = 'rgba(255,255,255,0.22)';
+  ctx.fillStyle = 'rgba(255,255,255,0.18)';
   ctx.fillRect(r.x + 12, r.y + 38, r.width - 24, r.height - 50);
 
-  ctx.fillStyle = '#8e8175';
-  ctx.fillRect(r.x + 24, r.y + r.height - 53, 82, 31);
-  ctx.fillStyle = '#655d56';
-  ctx.fillRect(r.x + 31, r.y + r.height - 22, 6, 16);
-  ctx.fillRect(r.x + 92, r.y + r.height - 22, 6, 16);
+  const floorY = r.y + r.height - 24;
+  ctx.fillStyle = '#8a7864';
+  ctx.fillRect(r.x + 22, floorY - 30, 86, 28);
+  ctx.fillStyle = '#5a5047';
+  ctx.fillRect(r.x + 28, floorY - 2, 8, 16);
+  ctx.fillRect(r.x + 94, floorY - 2, 8, 16);
 
-  ctx.fillStyle = '#7c6f62';
-  ctx.fillRect(r.x + r.width - 80, r.y + r.height - 86, 54, 64);
-  ctx.fillStyle = '#b9c5c8';
-  ctx.fillRect(r.x + r.width - 73, r.y + r.height - 79, 40, 25);
+  ctx.fillStyle = '#746657';
+  ctx.fillRect(r.x + r.width - 78, floorY - 68, 54, 66);
+  ctx.fillStyle = '#a8b5b8';
+  ctx.fillRect(r.x + r.width - 70, floorY - 60, 38, 24);
+  ctx.fillStyle = '#35414b';
+  ctx.fillRect(r.x + r.width - 66, floorY - 56, 30, 16);
 
   if (variant === 0 || variant === 2) {
-    ctx.fillStyle = '#786a59';
-    ctx.fillRect(r.x + 120, r.y + r.height - 44, 80, 10);
+    ctx.fillStyle = '#6d5f50';
+    ctx.fillRect(r.x + 122, floorY - 20, 80, 10);
+    ctx.fillRect(r.x + 130, floorY - 10, 6, 12);
+    ctx.fillRect(r.x + 188, floorY - 10, 6, 12);
   } else {
-    ctx.fillStyle = '#857866';
-    ctx.fillRect(r.x + 128, r.y + r.height - 63, 62, 42);
+    ctx.fillStyle = '#7a6d5d';
+    ctx.fillRect(r.x + 128, floorY - 43, 62, 41);
   }
+
+  ctx.fillStyle = '#a99e82';
+  ctx.fillRect(r.x + 42, r.y + 48, 54, 34);
+  ctx.fillStyle = '#5f6f68';
+  ctx.fillRect(r.x + 48, r.y + 54, 42, 22);
+}
+
+function getPose(action) {
+  if (action.includes('睡眠')) return 'sleep';
+  if (action.includes('PC') || action.includes('作画') || action.includes('仕事') || action.includes('宿題')) return 'sit';
+  if (action.includes('テレビ') || action.includes('自由時間') || action.includes('家で過ご')) return 'idle';
+  if (action.includes('支度') || action.includes('朝の時間') || action.includes('家事') || action.includes('食事')) return 'busy';
+  return 'idle';
 }
 
 function drawResident(resident, status, roomRect, index, count) {
   const baseX = roomRect.x + roomRect.width * (count === 1 ? 0.5 : (index + 1) / (count + 1));
-  const baseY = roomRect.y + roomRect.height - 54;
-  const bob = Math.sin((performance.now() / 700) + resident.room + index) * 2;
-  const x = baseX;
-  const y = baseY + bob;
-
+  const baseY = roomRect.y + roomRect.height - 48;
   const selected = state.selectedResidentId === resident.id;
+  const pose = getPose(status.action);
+  const frame = Math.floor(performance.now() / 360) % 2;
+
   if (selected) {
-    ctx.beginPath();
-    ctx.arc(x, y - 27, 28, 0, Math.PI * 2);
-    ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 4;
-    ctx.stroke();
+    ctx.strokeStyle = '#fff5d8';
+    ctx.lineWidth = 3;
+    ctx.strokeRect(Math.round(baseX - 32), Math.round(baseY - 82), 64, 88);
   }
 
-  ctx.fillStyle = '#25282d';
-  ctx.fillRect(x - 13, y - 24, 26, 33);
-
-  ctx.beginPath();
-  ctx.arc(x, y - 36, 14, 0, Math.PI * 2);
-  ctx.fillStyle = '#e7c4a5';
-  ctx.fill();
-  ctx.strokeStyle = '#25282d';
-  ctx.lineWidth = 2;
-  ctx.stroke();
-
-  ctx.fillStyle = '#f5f5f5';
-  ctx.font = 'bold 13px system-ui, sans-serif';
-  ctx.textAlign = 'center';
-  ctx.fillText(resident.initials, x, y - 31);
+  drawPixelPerson(resident, Math.round(baseX), Math.round(baseY), pose, frame);
 
   ctx.fillStyle = '#17191d';
-  ctx.font = 'bold 16px system-ui, sans-serif';
-  ctx.fillText(resident.symbol, x, y + 27);
+  ctx.fillRect(Math.round(baseX - 52), Math.round(baseY + 11), 104, 20);
+  ctx.fillStyle = '#f5f5f5';
+  ctx.font = '12px monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText(resident.name.split(' ')[1] || resident.name, Math.round(baseX), Math.round(baseY + 26));
 
-  ctx.fillStyle = 'rgba(24, 25, 28, 0.82)';
-  ctx.fillRect(x - 55, y + 34, 110, 22);
-  ctx.fillStyle = '#ffffff';
-  ctx.font = '12px system-ui, sans-serif';
-  ctx.fillText(resident.name.split(' ')[1] || resident.name, x, y + 49);
+  state.hitResidents.push({ resident, x: baseX, y: baseY - 35 });
 
-  state.hitResidents.push({ resident, x, y: y - 20, radius: 34 / camera.scale + 12 });
+  if (selected) drawThoughtBubble(baseX, baseY - 112, status.action);
+}
 
-  if (selected) {
-    drawThoughtBubble(x, y - 90, status.action);
+function drawPixelPerson(resident, x, y, pose, frame) {
+  const a = resident.appearance;
+  const p = resident.role === '小学生' ? 3 : 4;
+  const bodyWide = a.build > 0 ? 4 : 3;
+  const bodyNarrow = a.build < 0 ? 2 : bodyWide;
+  const px = (gx, gy, w, h, color) => {
+    ctx.fillStyle = color;
+    ctx.fillRect(x + gx * p, y + gy * p, w * p, h * p);
+  };
+
+  if (pose === 'sleep') {
+    px(-7, -5, 14, 4, '#6f665d');
+    px(-6, -9, 4, 4, a.skin);
+    px(-6, -10, 4, 2, a.hair);
+    px(-2, -8, 8, 3, a.shirt);
+    px(4, -8, 2, 2, a.pants);
+    px(-7, -4, 14, 1, '#c9bca6');
+    return;
+  }
+
+  if (pose === 'sit') {
+    px(-3, -14, 6, 5, a.skin);
+    drawPixelHair(px, a.hairStyle, a.hair, -3, -15);
+    px(-bodyNarrow, -9, bodyNarrow * 2, 6, a.shirt);
+    px(-3, -3, 6, 3, a.pants);
+    px(2, 0, 4, 2, a.pants);
+    px(-5, -7, 2, 2, a.skin);
+    px(3, -7, 2, 2, a.skin);
+    px(5, -8, 2, 1, a.accent);
+    return;
+  }
+
+  const bob = pose === 'busy' && frame === 1 ? -1 : 0;
+  const ox = frame === 1 && pose === 'busy' ? 1 : 0;
+  const py = (gx, gy, w, h, color) => px(gx + ox, gy + bob, w, h, color);
+
+  py(-3, -16, 6, 5, a.skin);
+  drawPixelHair(py, a.hairStyle, a.hair, -3, -17);
+  py(-bodyWide, -11, bodyWide * 2, 7, a.shirt);
+  py(-bodyWide - 1, -10, 1, 5, a.skin);
+  py(bodyWide, -10, 1, 5, a.skin);
+  py(-3, -4, 3, 5, a.pants);
+  py(0, -4, 3, 5, a.pants);
+
+  if (pose === 'busy') {
+    py(frame === 0 ? -4 : 3, -7, 2, 2, a.accent);
+  } else {
+    py(-1, -9, 2, 1, a.accent);
+  }
+}
+
+function drawPixelHair(px, style, color, x, y) {
+  switch (style % 6) {
+    case 0:
+      px(x, y, 6, 2, color); px(x - 1, y + 1, 2, 4, color); break;
+    case 1:
+      px(x, y, 6, 2, color); px(x, y + 1, 1, 4, color); px(x + 5, y + 1, 1, 4, color); break;
+    case 2:
+      px(x, y, 6, 2, color); px(x + 1, y - 1, 4, 1, color); px(x - 1, y + 2, 2, 2, color); break;
+    case 3:
+      px(x, y, 6, 2, color); px(x - 1, y + 1, 1, 5, color); px(x + 6, y + 1, 1, 5, color); break;
+    case 4:
+      px(x + 1, y, 4, 2, color); px(x, y + 1, 6, 1, color); break;
+    default:
+      px(x, y, 6, 2, color); px(x - 1, y + 2, 1, 3, color); px(x + 6, y + 2, 1, 3, color); px(x + 5, y + 4, 2, 2, color); break;
   }
 }
 
 function drawThoughtBubble(x, y, text) {
   const width = Math.max(120, Math.min(220, text.length * 15 + 28));
   const height = 42;
-  ctx.fillStyle = 'rgba(255,255,255,0.94)';
-  roundedRect(ctx, x - width / 2, y - height / 2, width, height, 14);
+  ctx.fillStyle = '#f4f1e8';
+  roundedRect(ctx, x - width / 2, y - height / 2, width, height, 4);
   ctx.fill();
   ctx.fillStyle = '#202226';
-  ctx.font = '14px system-ui, sans-serif';
+  ctx.font = '14px monospace';
   ctx.textAlign = 'center';
   ctx.fillText(text, x, y + 5);
 }
@@ -519,15 +650,12 @@ function hitTestResident(screenX, screenY) {
   const world = screenToWorld(screenX, screenY);
   let best = null;
   let bestDistance = Infinity;
-
   for (const hit of state.hitResidents) {
-    const dx = world.x - hit.x;
-    const dy = world.y - hit.y;
-    const distance = Math.hypot(dx, dy);
-    const radius = Math.max(32, 28 / camera.scale);
-    if (distance <= radius && distance < bestDistance) {
+    const distanceToResident = Math.hypot(world.x - hit.x, world.y - hit.y);
+    const radius = Math.max(34, 30 / camera.scale);
+    if (distanceToResident <= radius && distanceToResident < bestDistance) {
       best = hit.resident;
-      bestDistance = distance;
+      bestDistance = distanceToResident;
     }
   }
   return best;
@@ -535,13 +663,6 @@ function hitTestResident(screenX, screenY) {
 
 function selectResident(resident) {
   state.selectedResidentId = resident.id;
-  const status = getResidentState(resident, getHour());
-  const stamp = `${state.day}日目 ${formatTime()}　${status.action}`;
-  resident.logs ??= [];
-  if (resident.logs[0] !== stamp) {
-    resident.logs.unshift(stamp);
-    resident.logs = resident.logs.slice(0, 8);
-  }
   ui.panel.classList.remove('hidden');
   updateResidentPanel(resident);
 }
@@ -550,6 +671,7 @@ function updateResidentPanel(resident) {
   if (!resident) return;
   const status = getResidentState(resident, getHour());
   ui.avatar.textContent = resident.initials;
+  ui.avatar.style.background = resident.appearance.shirt;
   ui.name.textContent = resident.name;
   ui.subtitle.textContent = `${resident.room}号室 / ${resident.role}`;
   ui.location.textContent = status.location;
@@ -557,10 +679,20 @@ function updateResidentPanel(resident) {
   ui.thought.textContent = `「${status.thought}」`;
   ui.profile.textContent = resident.profile;
   ui.log.innerHTML = '';
-  const logs = resident.logs?.length ? resident.logs : ['まだ観察記録はありません。'];
+  ui.logCount.textContent = `${resident.logs.length}件`;
+
+  const logs = resident.logs.length ? resident.logs.slice(0, 30) : null;
+  if (!logs) {
+    const li = document.createElement('li');
+    li.textContent = 'まだ生活ログはありません。';
+    ui.log.appendChild(li);
+    return;
+  }
+
   for (const entry of logs) {
     const li = document.createElement('li');
-    li.textContent = entry;
+    li.textContent = `${entry.day}日目 ${entry.time}　${entry.location}：${entry.action}`;
+    li.title = entry.thought;
     ui.log.appendChild(li);
   }
 }
@@ -571,6 +703,7 @@ function localPointerPosition(event) {
 }
 
 canvas.addEventListener('pointerdown', (event) => {
+  if (!state.started) return;
   event.preventDefault();
   canvas.setPointerCapture?.(event.pointerId);
   const p = localPointerPosition(event);
@@ -603,12 +736,11 @@ canvas.addEventListener('pointermove', (event) => {
     const points = [...pointerState.pointers.values()].slice(0, 2);
     const currentDistance = Math.max(1, distance(points[0], points[1]));
     const mid = midpoint(points[0], points[1]);
-    const newScale = clamp(
+    camera.scale = clamp(
       pointerState.pinch.startScale * (currentDistance / pointerState.pinch.startDistance),
       camera.minScale,
       camera.maxScale
     );
-    camera.scale = newScale;
     camera.x = mid.x - pointerState.pinch.worldAtMid.x * camera.scale;
     camera.y = mid.y - pointerState.pinch.worldAtMid.y * camera.scale;
     return;
@@ -641,10 +773,7 @@ function endPointer(event) {
   }
 
   pointerState.pointers.delete(event.pointerId);
-
-  if (pointerState.pointers.size < 2) {
-    pointerState.pinch = null;
-  }
+  if (pointerState.pointers.size < 2) pointerState.pinch = null;
   if (pointerState.pointers.size === 0) {
     pointerState.primaryDown = null;
     pointerState.dragging = false;
@@ -656,6 +785,7 @@ canvas.addEventListener('pointerup', endPointer);
 canvas.addEventListener('pointercancel', endPointer);
 
 canvas.addEventListener('wheel', (event) => {
+  if (!state.started) return;
   event.preventDefault();
   const p = localPointerPosition(event);
   const before = screenToWorld(p.x, p.y);
@@ -673,7 +803,17 @@ function distance(a, b) {
   return Math.hypot(a.x - b.x, a.y - b.y);
 }
 
+ui.start.addEventListener('click', () => {
+  state.started = true;
+  state.paused = false;
+  state.lastFrameTime = performance.now();
+  recordResidentActivity(true);
+  ui.titleScreen.classList.add('hidden');
+  updateHud();
+});
+
 ui.pause.addEventListener('click', () => {
+  if (!state.started) return;
   state.paused = !state.paused;
   updateHud();
 });
@@ -704,4 +844,5 @@ resizeCanvas();
 resetCamera();
 ui.panel.classList.add('hidden');
 updateHud();
+draw();
 requestAnimationFrame(frame);
