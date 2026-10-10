@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Apartment Little Life</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div id="app">
+    <canvas id="game-canvas" aria-label="Apartment Little Life game view"></canvas>
+
+    <header class="hud hud-top">
+      <div class="hud-group time-block">
+        <strong id="day-label">1日目</strong>
+        <span id="time-label">06:30</span>
+        <span id="period-label">朝</span>
+      </div>
+      <div class="hud-group controls">
+        <button id="pause-button" type="button">一時停止</button>
+        <button id="speed-button" type="button">速度 x1</button>
+        <button id="reset-camera-button" type="button">画面を戻す</button>
+      </div>
+    </header>
+
+    <aside id="resident-panel" class="resident-panel" aria-live="polite">
+      <button id="panel-close-button" class="panel-close" type="button" aria-label="閉じる">×</button>
+      <div class="resident-title-row">
+        <div id="resident-avatar" class="resident-avatar">?</div>
+        <div>
+          <div id="resident-name" class="resident-name">住人を選択</div>
+          <div id="resident-subtitle" class="resident-subtitle">マンションの住人をクリック / タップしてください</div>
+        </div>
+      </div>
+      <dl class="resident-data">
+        <div><dt>現在地</dt><dd id="resident-location">-</dd></div>
+        <div><dt>行動</dt><dd id="resident-action">-</dd></div>
+        <div><dt>考えていること</dt><dd id="resident-thought">-</dd></div>
+      </dl>
+      <div class="profile-section">
+        <h2>プロフィール</h2>
+        <p id="resident-profile">まだ誰も選択されていません。</p>
+      </div>
+      <div class="log-section">
+        <h2>観察履歴</h2>
+        <ul id="resident-log" class="resident-log">
+          <li>住人を観察すると、ここに簡易ログが残ります。</li>
+        </ul>
+      </div>
+    </aside>
+
+    <div class="hint">クリック / タップ: 選択　ドラッグ / スワイプ: 移動　ホイール / ピンチ: 拡大縮小</div>
+  </div>
+
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>
